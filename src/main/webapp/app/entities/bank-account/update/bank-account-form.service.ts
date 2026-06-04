@@ -41,7 +41,7 @@ export class BankAccountFormService {
         },
       ),
       name: new FormControl(bankAccountRawValue.name, {
-        validators: [Validators.required],
+        validators: [Validators.required, Validators.maxLength(100)],
       }),
       balance: new FormControl(bankAccountRawValue.balance, {
         validators: [Validators.required],
