@@ -1,0 +1,11 @@
+{
+  "jhipsterSampleApplicationApp": {
+    "InvoiceStatus": {
+      "null": "",
+      "DRAFT": "Draft",
+      "SENT": "Sent",
+      "PAID": "Paid",
+      "OVERDUE": "Overdue"
+    }
+  }
+}
