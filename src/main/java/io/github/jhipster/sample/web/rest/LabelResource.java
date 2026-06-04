@@ -3,6 +3,10 @@ package io.github.jhipster.sample.web.rest;
 import io.github.jhipster.sample.domain.Label;
 import io.github.jhipster.sample.repository.LabelRepository;
 import io.github.jhipster.sample.web.rest.errors.BadRequestAlertException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -26,6 +30,7 @@ import tech.jhipster.web.util.ResponseUtil;
 @RestController
 @RequestMapping("/api/labels")
 @Transactional
+@Tag(name = "Label", description = "CRUD operations for labels")
 public class LabelResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(LabelResource.class);
@@ -49,6 +54,9 @@ public class LabelResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
+    @Operation(summary = "Create a new label")
+    @ApiResponse(responseCode = "201", description = "Label created")
+    @ApiResponse(responseCode = "400", description = "Invalid input or ID already set")
     public ResponseEntity<Label> createLabel(@Valid @RequestBody Label label) throws URISyntaxException {
         LOG.debug("REST request to save Label : {}", label);
         if (label.getId() != null) {
@@ -71,8 +79,14 @@ public class LabelResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Label> updateLabel(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody Label label)
-        throws URISyntaxException {
+    @Operation(summary = "Update a label", description = "Full update of an existing label by ID.")
+    @ApiResponse(responseCode = "200", description = "Label updated")
+    @ApiResponse(responseCode = "400", description = "Invalid input")
+    @ApiResponse(responseCode = "404", description = "Label not found")
+    public ResponseEntity<Label> updateLabel(
+        @Parameter(description = "ID of the label to update") @PathVariable(value = "id", required = false) final Long id,
+        @Valid @RequestBody Label label
+    ) throws URISyntaxException {
         LOG.debug("REST request to update Label : {}, {}", id, label);
         if (label.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -103,8 +117,12 @@ public class LabelResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @Operation(summary = "Partially update a label", description = "Merge-patch update; null fields are ignored.")
+    @ApiResponse(responseCode = "200", description = "Label updated")
+    @ApiResponse(responseCode = "400", description = "Invalid input")
+    @ApiResponse(responseCode = "404", description = "Label not found")
     public ResponseEntity<Label> partialUpdateLabel(
-        @PathVariable(value = "id", required = false) final Long id,
+        @Parameter(description = "ID of the label to patch") @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody Label label
     ) throws URISyntaxException {
         LOG.debug("REST request to partial update Label partially : {}, {}", id, label);
@@ -140,6 +158,8 @@ public class LabelResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of labels in body.
      */
     @GetMapping("")
+    @Operation(summary = "Get all labels")
+    @ApiResponse(responseCode = "200", description = "List of labels")
     public List<Label> getAllLabels() {
         LOG.debug("REST request to get all Labels");
         return labelRepository.findAll();
@@ -152,7 +172,10 @@ public class LabelResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the label, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Label> getLabel(@PathVariable("id") Long id) {
+    @Operation(summary = "Get a label by ID")
+    @ApiResponse(responseCode = "200", description = "Label found")
+    @ApiResponse(responseCode = "404", description = "Label not found")
+    public ResponseEntity<Label> getLabel(@Parameter(description = "ID of the label") @PathVariable("id") Long id) {
         LOG.debug("REST request to get Label : {}", id);
         Optional<Label> label = labelRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(label);
@@ -165,7 +188,9 @@ public class LabelResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteLabel(@PathVariable("id") Long id) {
+    @Operation(summary = "Delete a label")
+    @ApiResponse(responseCode = "204", description = "Label deleted")
+    public ResponseEntity<Void> deleteLabel(@Parameter(description = "ID of the label to delete") @PathVariable("id") Long id) {
         LOG.debug("REST request to delete Label : {}", id);
         labelRepository.deleteById(id);
         return ResponseEntity.noContent()

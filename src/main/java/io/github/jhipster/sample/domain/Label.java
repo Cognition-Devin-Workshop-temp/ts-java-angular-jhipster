@@ -1,6 +1,7 @@
 package io.github.jhipster.sample.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serial;
@@ -17,6 +18,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "label")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
+@Schema(description = "A label that can be attached to operations.")
 public class Label implements Serializable {
 
     @Serial
@@ -26,11 +28,13 @@ public class Label implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
     @SequenceGenerator(name = "sequenceGenerator")
     @Column(name = "id")
+    @Schema(description = "Unique identifier", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     @NotNull
     @Size(min = 3)
     @Column(name = "label", nullable = false)
+    @Schema(description = "Label text (min 3 characters)", requiredMode = Schema.RequiredMode.REQUIRED, example = "urgent")
     private String label;
 
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "labels")

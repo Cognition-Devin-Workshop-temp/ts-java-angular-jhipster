@@ -3,6 +3,10 @@ package io.github.jhipster.sample.web.rest;
 import io.github.jhipster.sample.domain.BankAccount;
 import io.github.jhipster.sample.repository.BankAccountRepository;
 import io.github.jhipster.sample.web.rest.errors.BadRequestAlertException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -26,6 +30,7 @@ import tech.jhipster.web.util.ResponseUtil;
 @RestController
 @RequestMapping("/api/bank-accounts")
 @Transactional
+@Tag(name = "Bank Account", description = "CRUD operations for bank accounts")
 public class BankAccountResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(BankAccountResource.class);
@@ -49,6 +54,9 @@ public class BankAccountResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
+    @Operation(summary = "Create a new bank account", description = "Creates a bank account. The ID must not be set.")
+    @ApiResponse(responseCode = "201", description = "Bank account created")
+    @ApiResponse(responseCode = "400", description = "Invalid input or ID already set")
     public ResponseEntity<BankAccount> createBankAccount(@Valid @RequestBody BankAccount bankAccount) throws URISyntaxException {
         LOG.debug("REST request to save BankAccount : {}", bankAccount);
         if (bankAccount.getId() != null) {
@@ -71,8 +79,12 @@ public class BankAccountResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
+    @Operation(summary = "Update a bank account", description = "Full update of an existing bank account by ID.")
+    @ApiResponse(responseCode = "200", description = "Bank account updated")
+    @ApiResponse(responseCode = "400", description = "Invalid input")
+    @ApiResponse(responseCode = "404", description = "Bank account not found")
     public ResponseEntity<BankAccount> updateBankAccount(
-        @PathVariable(value = "id", required = false) final Long id,
+        @Parameter(description = "ID of the bank account to update") @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody BankAccount bankAccount
     ) throws URISyntaxException {
         LOG.debug("REST request to update BankAccount : {}, {}", id, bankAccount);
@@ -105,8 +117,12 @@ public class BankAccountResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @Operation(summary = "Partially update a bank account", description = "Merge-patch update; null fields are ignored.")
+    @ApiResponse(responseCode = "200", description = "Bank account updated")
+    @ApiResponse(responseCode = "400", description = "Invalid input")
+    @ApiResponse(responseCode = "404", description = "Bank account not found")
     public ResponseEntity<BankAccount> partialUpdateBankAccount(
-        @PathVariable(value = "id", required = false) final Long id,
+        @Parameter(description = "ID of the bank account to patch") @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody BankAccount bankAccount
     ) throws URISyntaxException {
         LOG.debug("REST request to partial update BankAccount partially : {}, {}", id, bankAccount);
@@ -144,8 +160,17 @@ public class BankAccountResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of bankAccounts in body.
      */
     @GetMapping("")
+    @Operation(
+        summary = "Get all bank accounts",
+        description = "Returns the complete list of bank accounts, optionally eager-loading relationships."
+    )
+    @ApiResponse(responseCode = "200", description = "List of bank accounts")
     public List<BankAccount> getAllBankAccounts(
-        @RequestParam(name = "eagerload", required = false, defaultValue = "true") boolean eagerload
+        @Parameter(description = "Eager-load relationships") @RequestParam(
+            name = "eagerload",
+            required = false,
+            defaultValue = "true"
+        ) boolean eagerload
     ) {
         LOG.debug("REST request to get all BankAccounts");
         if (eagerload) {
@@ -162,7 +187,10 @@ public class BankAccountResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the bankAccount, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<BankAccount> getBankAccount(@PathVariable("id") Long id) {
+    @Operation(summary = "Get a bank account by ID")
+    @ApiResponse(responseCode = "200", description = "Bank account found")
+    @ApiResponse(responseCode = "404", description = "Bank account not found")
+    public ResponseEntity<BankAccount> getBankAccount(@Parameter(description = "ID of the bank account") @PathVariable("id") Long id) {
         LOG.debug("REST request to get BankAccount : {}", id);
         Optional<BankAccount> bankAccount = bankAccountRepository.findOneWithEagerRelationships(id);
         return ResponseUtil.wrapOrNotFound(bankAccount);
@@ -175,7 +203,11 @@ public class BankAccountResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBankAccount(@PathVariable("id") Long id) {
+    @Operation(summary = "Delete a bank account")
+    @ApiResponse(responseCode = "204", description = "Bank account deleted")
+    public ResponseEntity<Void> deleteBankAccount(
+        @Parameter(description = "ID of the bank account to delete") @PathVariable("id") Long id
+    ) {
         LOG.debug("REST request to delete BankAccount : {}", id);
         bankAccountRepository.deleteById(id);
         return ResponseEntity.noContent()

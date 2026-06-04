@@ -10,6 +10,10 @@ import io.github.jhipster.sample.service.dto.PasswordChangeDTO;
 import io.github.jhipster.sample.web.rest.errors.*;
 import io.github.jhipster.sample.web.rest.vm.KeyAndPasswordVM;
 import io.github.jhipster.sample.web.rest.vm.ManagedUserVM;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.*;
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Account", description = "Current-user account management (registration, activation, password reset)")
 public class AccountResource {
 
     private static class AccountResourceException extends RuntimeException {
@@ -56,6 +61,9 @@ public class AccountResource {
      */
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Register a new user account")
+    @ApiResponse(responseCode = "201", description = "Account registered")
+    @ApiResponse(responseCode = "400", description = "Invalid password, email or login already in use")
     public void registerAccount(@Valid @RequestBody ManagedUserVM managedUserVM) {
         if (isPasswordLengthInvalid(managedUserVM.getPassword())) {
             throw new InvalidPasswordException();
@@ -71,7 +79,10 @@ public class AccountResource {
      * @throws RuntimeException {@code 500 (Internal Server Error)} if the user couldn't be activated.
      */
     @GetMapping("/activate")
-    public void activateAccount(@RequestParam(value = "key") String key) {
+    @Operation(summary = "Activate a registered user account")
+    @ApiResponse(responseCode = "200", description = "Account activated")
+    @ApiResponse(responseCode = "500", description = "Invalid activation key")
+    public void activateAccount(@Parameter(description = "Activation key") @RequestParam(value = "key") String key) {
         Optional<User> user = userService.activateRegistration(key);
         if (!user.isPresent()) {
             throw new AccountResourceException("No user was found for this activation key");
@@ -85,6 +96,8 @@ public class AccountResource {
      * @throws RuntimeException {@code 500 (Internal Server Error)} if the user couldn't be returned.
      */
     @GetMapping("/account")
+    @Operation(summary = "Get the current user account")
+    @ApiResponse(responseCode = "200", description = "Current account details")
     public AdminUserDTO getAccount() {
         return userService
             .getUserWithAuthorities()
@@ -100,6 +113,9 @@ public class AccountResource {
      * @throws RuntimeException {@code 500 (Internal Server Error)} if the user login wasn't found.
      */
     @PostMapping("/account")
+    @Operation(summary = "Update the current user information")
+    @ApiResponse(responseCode = "200", description = "Account updated")
+    @ApiResponse(responseCode = "400", description = "Email already in use")
     public void saveAccount(@Valid @RequestBody AdminUserDTO userDTO) {
         String userLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
             new AccountResourceException("Current user login not found")
@@ -128,6 +144,9 @@ public class AccountResource {
      * @throws InvalidPasswordException {@code 400 (Bad Request)} if the new password is incorrect.
      */
     @PostMapping(path = "/account/change-password")
+    @Operation(summary = "Change the current user's password")
+    @ApiResponse(responseCode = "200", description = "Password changed")
+    @ApiResponse(responseCode = "400", description = "Invalid password")
     public void changePassword(@RequestBody PasswordChangeDTO passwordChangeDto) {
         if (isPasswordLengthInvalid(passwordChangeDto.getNewPassword())) {
             throw new InvalidPasswordException();
@@ -141,6 +160,8 @@ public class AccountResource {
      * @param mail the mail of the user.
      */
     @PostMapping(path = "/account/reset-password/init")
+    @Operation(summary = "Request a password reset email")
+    @ApiResponse(responseCode = "200", description = "Reset email sent (always returns 200 for security)")
     public void requestPasswordReset(@RequestBody String mail) {
         Optional<User> user = userService.requestPasswordReset(mail);
         if (user.isPresent()) {
@@ -160,6 +181,10 @@ public class AccountResource {
      * @throws RuntimeException {@code 500 (Internal Server Error)} if the password could not be reset.
      */
     @PostMapping(path = "/account/reset-password/finish")
+    @Operation(summary = "Finish the password reset process")
+    @ApiResponse(responseCode = "200", description = "Password reset complete")
+    @ApiResponse(responseCode = "400", description = "Invalid password")
+    @ApiResponse(responseCode = "500", description = "Invalid reset key")
     public void finishPasswordReset(@RequestBody KeyAndPasswordVM keyAndPassword) {
         if (isPasswordLengthInvalid(keyAndPassword.getNewPassword())) {
             throw new InvalidPasswordException();

@@ -1,6 +1,7 @@
 package io.github.jhipster.sample.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serial;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Persistable;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties(value = { "new", "id" })
 @SuppressWarnings("common-java:DuplicatedBlocks")
+@Schema(description = "A security authority / role (e.g. ROLE_ADMIN, ROLE_USER).")
 public class Authority implements Serializable, Persistable<String> {
 
     @Serial
@@ -27,6 +29,7 @@ public class Authority implements Serializable, Persistable<String> {
     @Size(max = 50)
     @Id
     @Column(name = "name", length = 50, nullable = false)
+    @Schema(description = "Authority name (max 50 characters)", requiredMode = Schema.RequiredMode.REQUIRED, example = "ROLE_ADMIN")
     private String name;
 
     @org.springframework.data.annotation.Transient

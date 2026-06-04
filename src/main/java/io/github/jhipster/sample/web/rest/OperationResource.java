@@ -3,6 +3,9 @@ package io.github.jhipster.sample.web.rest;
 import io.github.jhipster.sample.domain.Operation;
 import io.github.jhipster.sample.repository.OperationRepository;
 import io.github.jhipster.sample.web.rest.errors.BadRequestAlertException;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -31,6 +34,7 @@ import tech.jhipster.web.util.ResponseUtil;
 @RestController
 @RequestMapping("/api/operations")
 @Transactional
+@Tag(name = "Operation", description = "CRUD operations for financial operations (transactions)")
 public class OperationResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(OperationResource.class);
@@ -54,6 +58,9 @@ public class OperationResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Create a new operation")
+    @ApiResponse(responseCode = "201", description = "Operation created")
+    @ApiResponse(responseCode = "400", description = "Invalid input or ID already set")
     public ResponseEntity<Operation> createOperation(@Valid @RequestBody Operation operation) throws URISyntaxException {
         LOG.debug("REST request to save Operation : {}", operation);
         if (operation.getId() != null) {
@@ -76,8 +83,12 @@ public class OperationResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Update an operation", description = "Full update of an existing operation by ID.")
+    @ApiResponse(responseCode = "200", description = "Operation updated")
+    @ApiResponse(responseCode = "400", description = "Invalid input")
+    @ApiResponse(responseCode = "404", description = "Operation not found")
     public ResponseEntity<Operation> updateOperation(
-        @PathVariable(value = "id", required = false) final Long id,
+        @Parameter(description = "ID of the operation to update") @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody Operation operation
     ) throws URISyntaxException {
         LOG.debug("REST request to update Operation : {}, {}", id, operation);
@@ -110,8 +121,15 @@ public class OperationResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Partially update an operation",
+        description = "Merge-patch update; null fields are ignored."
+    )
+    @ApiResponse(responseCode = "200", description = "Operation updated")
+    @ApiResponse(responseCode = "400", description = "Invalid input")
+    @ApiResponse(responseCode = "404", description = "Operation not found")
     public ResponseEntity<Operation> partialUpdateOperation(
-        @PathVariable(value = "id", required = false) final Long id,
+        @Parameter(description = "ID of the operation to patch") @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody Operation operation
     ) throws URISyntaxException {
         LOG.debug("REST request to partial update Operation partially : {}, {}", id, operation);
@@ -151,9 +169,18 @@ public class OperationResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of operations in body.
      */
     @GetMapping("")
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Get all operations",
+        description = "Returns a paginated list of operations, optionally eager-loading relationships."
+    )
+    @ApiResponse(responseCode = "200", description = "List of operations")
     public ResponseEntity<List<Operation>> getAllOperations(
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
-        @RequestParam(name = "eagerload", required = false, defaultValue = "true") boolean eagerload
+        @Parameter(description = "Eager-load relationships") @RequestParam(
+            name = "eagerload",
+            required = false,
+            defaultValue = "true"
+        ) boolean eagerload
     ) {
         LOG.debug("REST request to get a page of Operations");
         Page<Operation> page;
@@ -173,7 +200,10 @@ public class OperationResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the operation, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Operation> getOperation(@PathVariable("id") Long id) {
+    @io.swagger.v3.oas.annotations.Operation(summary = "Get an operation by ID")
+    @ApiResponse(responseCode = "200", description = "Operation found")
+    @ApiResponse(responseCode = "404", description = "Operation not found")
+    public ResponseEntity<Operation> getOperation(@Parameter(description = "ID of the operation") @PathVariable("id") Long id) {
         LOG.debug("REST request to get Operation : {}", id);
         Optional<Operation> operation = operationRepository.findOneWithEagerRelationships(id);
         return ResponseUtil.wrapOrNotFound(operation);
@@ -186,7 +216,9 @@ public class OperationResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOperation(@PathVariable("id") Long id) {
+    @io.swagger.v3.oas.annotations.Operation(summary = "Delete an operation")
+    @ApiResponse(responseCode = "204", description = "Operation deleted")
+    public ResponseEntity<Void> deleteOperation(@Parameter(description = "ID of the operation to delete") @PathVariable("id") Long id) {
         LOG.debug("REST request to delete Operation : {}", id);
         operationRepository.deleteById(id);
         return ResponseEntity.noContent()
