@@ -7,6 +7,9 @@ import static io.github.jhipster.sample.security.SecurityUtils.USER_ID_CLAIM;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.jhipster.sample.security.DomainUserDetailsService.UserWithId;
 import io.github.jhipster.sample.web.rest.vm.LoginVM;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import java.time.Instant;
@@ -34,6 +37,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Authentication", description = "JWT authentication endpoints")
 public class AuthenticateController {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthenticateController.class);
@@ -54,6 +58,9 @@ public class AuthenticateController {
     }
 
     @PostMapping("/authenticate")
+    @Operation(summary = "Authenticate and obtain a JWT token")
+    @ApiResponse(responseCode = "200", description = "Authentication successful, JWT token returned")
+    @ApiResponse(responseCode = "401", description = "Invalid credentials")
     public ResponseEntity<JWTToken> authorize(@Valid @RequestBody LoginVM loginVM) {
         var authenticationToken = new UsernamePasswordAuthenticationToken(loginVM.getUsername(), loginVM.getPassword());
 
@@ -72,6 +79,9 @@ public class AuthenticateController {
      * or with status {@code 401 (Unauthorized)} if not authenticated.
      */
     @GetMapping("/authenticate")
+    @Operation(summary = "Check if the current user is authenticated")
+    @ApiResponse(responseCode = "204", description = "User is authenticated")
+    @ApiResponse(responseCode = "401", description = "User is not authenticated")
     public ResponseEntity<Void> isAuthenticated(Principal principal) {
         LOG.debug("REST request to check if the current user is authenticated");
         return ResponseEntity.status(principal == null ? HttpStatus.UNAUTHORIZED : HttpStatus.NO_CONTENT).build();

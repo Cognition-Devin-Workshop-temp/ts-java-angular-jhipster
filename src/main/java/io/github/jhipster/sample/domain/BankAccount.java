@@ -1,6 +1,7 @@
 package io.github.jhipster.sample.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serial;
@@ -18,6 +19,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "bank_account")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
+@Schema(description = "Represents a bank account owned by a user.")
 public class BankAccount implements Serializable {
 
     @Serial
@@ -27,14 +29,17 @@ public class BankAccount implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
     @SequenceGenerator(name = "sequenceGenerator")
     @Column(name = "id")
+    @Schema(description = "Unique identifier", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     @NotNull
     @Column(name = "name", nullable = false)
+    @Schema(description = "Account holder name", requiredMode = Schema.RequiredMode.REQUIRED, example = "Main Checking")
     private String name;
 
     @NotNull
     @Column(name = "balance", precision = 21, scale = 2, nullable = false)
+    @Schema(description = "Current balance", requiredMode = Schema.RequiredMode.REQUIRED, example = "1500.75")
     private BigDecimal balance;
 
     @ManyToOne(fetch = FetchType.LAZY)

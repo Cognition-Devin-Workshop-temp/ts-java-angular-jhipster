@@ -10,6 +10,10 @@ import io.github.jhipster.sample.service.dto.AdminUserDTO;
 import io.github.jhipster.sample.web.rest.errors.BadRequestAlertException;
 import io.github.jhipster.sample.web.rest.errors.EmailAlreadyUsedException;
 import io.github.jhipster.sample.web.rest.errors.LoginAlreadyUsedException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import java.net.URI;
@@ -57,6 +61,7 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/admin")
+@Tag(name = "User Management", description = "Admin-only user CRUD operations")
 public class UserResource {
 
     private static final List<String> ALLOWED_ORDERED_PROPERTIES = Collections.unmodifiableList(
@@ -106,6 +111,9 @@ public class UserResource {
      */
     @PostMapping("/users")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @Operation(summary = "Create a new user", description = "Admin only. Sends an activation email.")
+    @ApiResponse(responseCode = "201", description = "User created")
+    @ApiResponse(responseCode = "400", description = "Login or email already in use")
     public ResponseEntity<User> createUser(@Valid @RequestBody AdminUserDTO userDTO) throws URISyntaxException {
         LOG.debug("REST request to save User : {}", userDTO);
 
@@ -135,8 +143,13 @@ public class UserResource {
      */
     @PutMapping({ "/users", "/users/{login}" })
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @Operation(summary = "Update an existing user", description = "Admin only.")
+    @ApiResponse(responseCode = "200", description = "User updated")
+    @ApiResponse(responseCode = "400", description = "Login or email already in use")
     public ResponseEntity<AdminUserDTO> updateUser(
-        @PathVariable(name = "login", required = false) @Pattern(regexp = Constants.LOGIN_REGEX) String login,
+        @Parameter(description = "Login of the user (optional path variable)") @PathVariable(name = "login", required = false) @Pattern(
+            regexp = Constants.LOGIN_REGEX
+        ) String login,
         @Valid @RequestBody AdminUserDTO userDTO
     ) {
         LOG.debug("REST request to update User : {}", userDTO);
@@ -164,6 +177,9 @@ public class UserResource {
      */
     @GetMapping("/users")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @Operation(summary = "Get all users", description = "Admin only. Returns full user details.")
+    @ApiResponse(responseCode = "200", description = "List of users")
+    @ApiResponse(responseCode = "400", description = "Invalid sort property")
     public ResponseEntity<List<AdminUserDTO>> getAllUsers(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get all User for an admin");
         if (!onlyContainsAllowedProperties(pageable)) {
@@ -187,7 +203,12 @@ public class UserResource {
      */
     @GetMapping("/users/{login}")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<AdminUserDTO> getUser(@PathVariable("login") @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
+    @Operation(summary = "Get a user by login", description = "Admin only.")
+    @ApiResponse(responseCode = "200", description = "User found")
+    @ApiResponse(responseCode = "404", description = "User not found")
+    public ResponseEntity<AdminUserDTO> getUser(
+        @Parameter(description = "Login of the user") @PathVariable("login") @Pattern(regexp = Constants.LOGIN_REGEX) String login
+    ) {
         LOG.debug("REST request to get User : {}", login);
         return ResponseUtil.wrapOrNotFound(userService.getUserWithAuthoritiesByLogin(login).map(AdminUserDTO::new));
     }
@@ -200,7 +221,11 @@ public class UserResource {
      */
     @DeleteMapping("/users/{login}")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<Void> deleteUser(@PathVariable("login") @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
+    @Operation(summary = "Delete a user", description = "Admin only.")
+    @ApiResponse(responseCode = "204", description = "User deleted")
+    public ResponseEntity<Void> deleteUser(
+        @Parameter(description = "Login of the user to delete") @PathVariable("login") @Pattern(regexp = Constants.LOGIN_REGEX) String login
+    ) {
         LOG.debug("REST request to delete User: {}", login);
         userService.deleteUser(login);
         return ResponseEntity.noContent().headers(HeaderUtil.createAlert(applicationName, "userManagement.deleted", login)).build();

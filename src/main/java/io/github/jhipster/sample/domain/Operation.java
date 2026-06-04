@@ -1,6 +1,7 @@
 package io.github.jhipster.sample.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serial;
@@ -19,6 +20,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "operation")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
+@Schema(description = "A financial operation (transaction) linked to a bank account.")
 public class Operation implements Serializable {
 
     @Serial
@@ -28,17 +30,21 @@ public class Operation implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
     @SequenceGenerator(name = "sequenceGenerator")
     @Column(name = "id")
+    @Schema(description = "Unique identifier", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     @NotNull
     @Column(name = "date", nullable = false)
+    @Schema(description = "Date and time of the operation", requiredMode = Schema.RequiredMode.REQUIRED, example = "2024-01-15T10:30:00Z")
     private Instant date;
 
     @Column(name = "description")
+    @Schema(description = "Optional description of the operation", example = "Monthly salary")
     private String description;
 
     @NotNull
     @Column(name = "amount", precision = 21, scale = 2, nullable = false)
+    @Schema(description = "Transaction amount", requiredMode = Schema.RequiredMode.REQUIRED, example = "250.00")
     private BigDecimal amount;
 
     @ManyToOne(fetch = FetchType.LAZY)

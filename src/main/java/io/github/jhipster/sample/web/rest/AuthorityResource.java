@@ -3,6 +3,10 @@ package io.github.jhipster.sample.web.rest;
 import io.github.jhipster.sample.domain.Authority;
 import io.github.jhipster.sample.repository.AuthorityRepository;
 import io.github.jhipster.sample.web.rest.errors.BadRequestAlertException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,6 +28,7 @@ import tech.jhipster.web.util.ResponseUtil;
 @RestController
 @RequestMapping("/api/authorities")
 @Transactional
+@Tag(name = "Authority", description = "Manage security authorities / roles (admin only)")
 public class AuthorityResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthorityResource.class);
@@ -48,6 +53,9 @@ public class AuthorityResource {
      */
     @PostMapping("")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @Operation(summary = "Create a new authority", description = "Requires ROLE_ADMIN.")
+    @ApiResponse(responseCode = "201", description = "Authority created")
+    @ApiResponse(responseCode = "400", description = "Authority already exists")
     public ResponseEntity<Authority> createAuthority(@Valid @RequestBody Authority authority) throws URISyntaxException {
         LOG.debug("REST request to save Authority : {}", authority);
         if (authorityRepository.existsById(authority.getName())) {
@@ -66,6 +74,8 @@ public class AuthorityResource {
      */
     @GetMapping("")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @Operation(summary = "Get all authorities", description = "Requires ROLE_ADMIN.")
+    @ApiResponse(responseCode = "200", description = "List of authorities")
     public List<Authority> getAllAuthorities() {
         LOG.debug("REST request to get all Authorities");
         return authorityRepository.findAll();
@@ -79,7 +89,10 @@ public class AuthorityResource {
      */
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Authority> getAuthority(@PathVariable("id") String id) {
+    @Operation(summary = "Get an authority by name", description = "Requires ROLE_ADMIN.")
+    @ApiResponse(responseCode = "200", description = "Authority found")
+    @ApiResponse(responseCode = "404", description = "Authority not found")
+    public ResponseEntity<Authority> getAuthority(@Parameter(description = "Name of the authority") @PathVariable("id") String id) {
         LOG.debug("REST request to get Authority : {}", id);
         Optional<Authority> authority = authorityRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(authority);
@@ -93,7 +106,9 @@ public class AuthorityResource {
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Void> deleteAuthority(@PathVariable("id") String id) {
+    @Operation(summary = "Delete an authority", description = "Requires ROLE_ADMIN.")
+    @ApiResponse(responseCode = "204", description = "Authority deleted")
+    public ResponseEntity<Void> deleteAuthority(@Parameter(description = "Name of the authority to delete") @PathVariable("id") String id) {
         LOG.debug("REST request to delete Authority : {}", id);
         authorityRepository.deleteById(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
