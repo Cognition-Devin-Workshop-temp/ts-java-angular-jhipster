@@ -1,7 +1,9 @@
 package io.github.jhipster.sample.web.rest;
 
 import io.github.jhipster.sample.domain.Invoice;
+import io.github.jhipster.sample.domain.enumeration.AuditAction;
 import io.github.jhipster.sample.repository.InvoiceRepository;
+import io.github.jhipster.sample.service.AuditLogService;
 import io.github.jhipster.sample.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -36,9 +38,11 @@ public class InvoiceResource {
     private String applicationName;
 
     private final InvoiceRepository invoiceRepository;
+    private final AuditLogService auditLogService;
 
-    public InvoiceResource(InvoiceRepository invoiceRepository) {
+    public InvoiceResource(InvoiceRepository invoiceRepository, AuditLogService auditLogService) {
         this.invoiceRepository = invoiceRepository;
+        this.auditLogService = auditLogService;
     }
 
     /**
@@ -55,6 +59,12 @@ public class InvoiceResource {
             throw new BadRequestAlertException("A new invoice cannot already have an ID", ENTITY_NAME, "idexists");
         }
         invoice = invoiceRepository.save(invoice);
+        auditLogService.log(
+            AuditAction.CREATE,
+            ENTITY_NAME,
+            invoice.getId(),
+            "Created invoice number=" + invoice.getNumber() + ", amount=" + invoice.getAmount() + ", status=" + invoice.getStatus()
+        );
         return ResponseEntity.created(new URI("/api/invoices/" + invoice.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, invoice.getId().toString()))
             .body(invoice);
@@ -88,6 +98,12 @@ public class InvoiceResource {
         }
 
         invoice = invoiceRepository.save(invoice);
+        auditLogService.log(
+            AuditAction.UPDATE,
+            ENTITY_NAME,
+            invoice.getId(),
+            "Updated invoice number=" + invoice.getNumber() + ", amount=" + invoice.getAmount() + ", status=" + invoice.getStatus()
+        );
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, invoice.getId().toString()))
             .body(invoice);
@@ -134,6 +150,20 @@ public class InvoiceResource {
             })
             .map(invoiceRepository::save);
 
+        result.ifPresent(updated ->
+            auditLogService.log(
+                AuditAction.PARTIAL_UPDATE,
+                ENTITY_NAME,
+                updated.getId(),
+                "Partial update invoice number=" +
+                    updated.getNumber() +
+                    ", amount=" +
+                    updated.getAmount() +
+                    ", status=" +
+                    updated.getStatus()
+            )
+        );
+
         return ResponseUtil.wrapOrNotFound(
             result,
             HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, invoice.getId().toString())
@@ -178,7 +208,12 @@ public class InvoiceResource {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteInvoice(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Invoice : {}", id);
-        invoiceRepository.deleteById(id);
+        invoiceRepository
+            .findById(id)
+            .ifPresent(entity -> {
+                invoiceRepository.delete(entity);
+                auditLogService.log(AuditAction.DELETE, ENTITY_NAME, id, "Deleted invoice");
+            });
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
