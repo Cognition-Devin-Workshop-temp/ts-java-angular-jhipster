@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 
 import { IInvoice, NewInvoice } from '../invoice.model';
 
@@ -35,7 +35,7 @@ export class InvoiceFormService {
       ...this.getFormDefaults(),
       ...(invoice ?? { id: null }),
     };
-    return new FormGroup<InvoiceFormGroupContent>({
+    const group = new FormGroup<InvoiceFormGroupContent>({
       id: new FormControl(
         { value: invoiceRawValue.id, disabled: true },
         {
@@ -53,13 +53,24 @@ export class InvoiceFormService {
         validators: [Validators.required],
       }),
       amount: new FormControl(invoiceRawValue.amount, {
-        validators: [Validators.required],
+        validators: [Validators.required, Validators.min(0.01)],
       }),
       status: new FormControl(invoiceRawValue.status, {
         validators: [Validators.required],
       }),
       bankAccount: new FormControl(invoiceRawValue.bankAccount),
     });
+    group.addValidators(this.dueDateAfterDateValidator);
+    return group;
+  }
+
+  private dueDateAfterDateValidator(control: AbstractControl): ValidationErrors | null {
+    const date = control.get('date')?.value;
+    const dueDate = control.get('dueDate')?.value;
+    if (date && dueDate && dueDate < date) {
+      return { dueDateBeforeDate: true };
+    }
+    return null;
   }
 
   getInvoice(form: InvoiceFormGroup): IInvoice | NewInvoice {

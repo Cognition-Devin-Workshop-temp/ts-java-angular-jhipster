@@ -30,6 +30,7 @@ public class Invoice implements Serializable {
     private Long id;
 
     @NotNull
+    @NotBlank
     @Column(name = "number", nullable = false)
     private String number;
 
@@ -42,6 +43,7 @@ public class Invoice implements Serializable {
     private LocalDate dueDate;
 
     @NotNull
+    @DecimalMin(value = "0", inclusive = false)
     @Column(name = "amount", precision = 21, scale = 2, nullable = false)
     private BigDecimal amount;
 

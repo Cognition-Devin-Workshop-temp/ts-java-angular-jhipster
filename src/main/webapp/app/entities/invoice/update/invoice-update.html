@@ -56,6 +56,13 @@
               }
             </div>
           }
+          @if (editForm.errors?.dueDateBeforeDate) {
+            <div>
+              <small class="form-text text-danger" jhiTranslate="jhipsterSampleApplicationApp.invoice.validation.dueDateBeforeDate"
+                >Due date must not be before the invoice date.</small
+              >
+            </div>
+          }
         </div>
 
         @let amountRef = editForm.get('amount')!;
@@ -66,6 +73,11 @@
             <div>
               @if (editForm.get('amount')?.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (editForm.get('amount')?.errors?.min) {
+                <small class="form-text text-danger" jhiTranslate="jhipsterSampleApplicationApp.invoice.validation.amountPositive"
+                  >Amount must be greater than zero.</small
+                >
               }
               <small
                 class="form-text text-danger"

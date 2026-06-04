@@ -54,6 +54,7 @@ public class InvoiceResource {
         if (invoice.getId() != null) {
             throw new BadRequestAlertException("A new invoice cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        validateDates(invoice);
         invoice = invoiceRepository.save(invoice);
         return ResponseEntity.created(new URI("/api/invoices/" + invoice.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, invoice.getId().toString()))
@@ -86,7 +87,7 @@ public class InvoiceResource {
         if (!invoiceRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-
+        validateDates(invoice);
         invoice = invoiceRepository.save(invoice);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, invoice.getId().toString()))
@@ -187,6 +188,12 @@ public class InvoiceResource {
     private <T> void updateIfPresent(Consumer<T> setter, T value) {
         if (value != null) {
             setter.accept(value);
+        }
+    }
+
+    private void validateDates(Invoice invoice) {
+        if (invoice.getDate() != null && invoice.getDueDate() != null && invoice.getDueDate().isBefore(invoice.getDate())) {
+            throw new BadRequestAlertException("Due date must not be before the invoice date", ENTITY_NAME, "dueDateBeforeDate");
         }
     }
 }

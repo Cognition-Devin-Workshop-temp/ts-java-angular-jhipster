@@ -499,6 +499,59 @@ class InvoiceResourceIT {
 
     @Test
     @Transactional
+    void checkAmountMustBePositive() throws Exception {
+        long databaseSizeBeforeTest = getRepositoryCount();
+        invoice.setAmount(BigDecimal.ZERO);
+
+        restInvoiceMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(invoice)))
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    void checkAmountMustNotBeNegative() throws Exception {
+        long databaseSizeBeforeTest = getRepositoryCount();
+        invoice.setAmount(new BigDecimal("-10"));
+
+        restInvoiceMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(invoice)))
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    void checkDueDateMustNotBeBeforeDate() throws Exception {
+        long databaseSizeBeforeTest = getRepositoryCount();
+        invoice.setDate(LocalDate.of(2024, 6, 15));
+        invoice.setDueDate(LocalDate.of(2024, 6, 1));
+
+        restInvoiceMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(invoice)))
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    void checkNumberMustNotBeBlank() throws Exception {
+        long databaseSizeBeforeTest = getRepositoryCount();
+        invoice.setNumber("   ");
+
+        restInvoiceMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(invoice)))
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
     void deleteInvoice() throws Exception {
         // Initialize the database
         insertedInvoice = invoiceRepository.saveAndFlush(invoice);

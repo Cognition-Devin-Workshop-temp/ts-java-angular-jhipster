@@ -23,7 +23,11 @@
       "dueDate": "Due Date",
       "amount": "Amount",
       "status": "Status",
-      "bankAccount": "Bank Account"
+      "bankAccount": "Bank Account",
+      "validation": {
+        "amountPositive": "Amount must be greater than zero.",
+        "dueDateBeforeDate": "Due date must not be before the invoice date."
+      }
     },
     "InvoiceStatus": {
       "null": "",
