@@ -30,7 +30,8 @@ public class BankAccount implements Serializable {
     private Long id;
 
     @NotNull
-    @Column(name = "name", nullable = false)
+    @Size(max = 100)
+    @Column(name = "name", length = 100, nullable = false)
     private String name;
 
     @NotNull
