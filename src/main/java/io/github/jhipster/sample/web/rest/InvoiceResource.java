@@ -208,8 +208,12 @@ public class InvoiceResource {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteInvoice(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Invoice : {}", id);
-        auditLogService.log(AuditAction.DELETE, ENTITY_NAME, id, "Deleted invoice");
-        invoiceRepository.deleteById(id);
+        invoiceRepository
+            .findById(id)
+            .ifPresent(entity -> {
+                invoiceRepository.delete(entity);
+                auditLogService.log(AuditAction.DELETE, ENTITY_NAME, id, "Deleted invoice");
+            });
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
